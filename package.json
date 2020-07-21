@@ -11,6 +11,7 @@
     "build:test": "cross-env NODE_ENV=production env_config=test node build/build.js"
   },
   "dependencies": {
+    "@better-scroll/core": "^2.0.0-beta.10",
     "axios": "^0.19.2",
     "i": "^0.3.6",
     "less": "^3.11.1",
