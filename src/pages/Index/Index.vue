@@ -70,7 +70,6 @@
               </div>
             </div>
           </div>
-          <div style="height: 1px" id="bottom"></div>
         </div>
       </div>
       <div class="btn" @click="downLoad">
@@ -155,10 +154,10 @@
           });
       },
       playerReady (e) {
-        console.log(1, e)
+        
       },
       reload (e) {
-        console.log('reload', e)
+        
       },
       initWebSocket () { //初始化weosocket 
         const wsuri = 'wss://hometest.bojem.com/wss'
@@ -243,6 +242,9 @@
               this.currentGoods = resData.itemInfo
             } else if (resData.type == 1 || resData.type == 2 || resData.type == 3 || resData.type == 4 || resData.type == 5 || resData.type == 6 || resData.type == 7 || resData.type == 102) {
               this.chatRecords = this.chatRecords.concat(resData)
+              if (this.chatRecords.length > 100) {
+                this.chatRecords.shift()
+              }
               this.$nextTick(() => {
                 setTimeout(() => {
                   this.scroll ? this.scroll.refresh() : ''
@@ -499,7 +501,7 @@
         }
       }
       .item:last-child{
-        margin-bottom: 3rem;
+        margin-bottom: .5rem;
       }
     }
   }
