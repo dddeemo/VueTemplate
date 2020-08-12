@@ -9,7 +9,6 @@ let toastMessage = (options) => {
   if (!instance) {
     instance = new ToastTem()
     instance.vm = instance.$mount()
-    console.log(instance)
     document.body.appendChild(instance.vm.$el)
   }
   console.log(options)

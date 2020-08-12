@@ -2,7 +2,7 @@
     <div class="index">
       <div class="videoWrap">
         <div class="auctionInfo">
-          <div>
+          <div style="width: 70%">
             <p class="goodsName">{{currentGoods.name}}</p>
             <p>出价人 {{priceList.length == 0 ? '起拍' : priceList[0].nick}}</p>
           </div>
@@ -13,7 +13,7 @@
         </div>
         <div  class="prism-player" id="J_prismPlayer"></div>
       </div>
-      <div class="chatRoom" ref="indexScroll">
+      <div class="chatRoom" style="flex: 1;" ref="indexScroll">
         <div class="scrollWrap">
           <div class="item" v-for="(chat, index) in chatRecords" :key="index">
             <div class="time"><p>{{chat.time}}</p></div>
@@ -72,6 +72,9 @@
           </div>
         </div>
       </div>
+      <div class="btn copyDiv">
+        
+      </div>
       <div class="btn" @click="downLoad">
         下载APP参加拍卖
       </div>
@@ -79,7 +82,7 @@
 </template>
 <script>
   import BScroll from '@better-scroll/core'
-
+  
   export default {
     name: 'index',
     data () {
@@ -93,8 +96,22 @@
         cover: '', // 封面图
         skinLayout: [
           {
+            name: "bigPlayButton", align: "cc"
+          }, {
             name: "H5Loading", align: "cc"
-          },
+          }, {
+            name: "controlBar", align: "blabs", x: 0, y: 0,
+            children: [
+              {name: "playButton", align: "tl", x: 15, y: 12},
+              {
+                "name": "liveDisplay",
+                "align": "tlabs",
+                "x": 40,
+                "y": 6
+              },
+              {name: "fullScreenButton", align: "tr", x: 10, y: 12}
+            ]
+          }
         ],
         currentGoods: {},
         priceList: [],
@@ -108,7 +125,6 @@
       this.websocket.close() //离开路由之后断开websocket连接
     },
     mounted () {
-      // this.AliplayerInit()
       this.$nextTick(() => {
         this.BScrollInit()
       })
@@ -128,39 +144,61 @@
       BScrollInit () {
         this.scroll = new BScroll(this.$refs.indexScroll, {
           scrollY: true,
-          scrollX: false
+          scrollX: false,
+          probeType: 3,
+          momentum: false,
         })
       },
       AliplayerInit () {
         if (this.player) {
+          console.log(this.player)
+          this.player.play()
           return
         }
         this.player = new Aliplayer({
-          id: 'J_prismPlayer',
-          width: '100%',
-          autoplay: false,
-          playsinline: true,
-          showBarTime: 2000,
-          source : this.source,
-          controlBarVisibility: 'click',
-          showBarTime: '2000',
-          cover: this.cover,
-          skinLayout: this.skinLayout
+          "id": 'J_prismPlayer',
+          "width": '100%',
+          "controlBarVisibility": 'click',
+          "showBarTime": '2000',
+          "source" : this.source,
+          "cover": this.cover,
+          "autoplay": false,
+          "rePlay": false,
+          "playsinline": true,
+          "preload": true,
+          "useH5Prism": true,
+          "skinLayout": this.skinLayout
           }, (player) => {
               console.log('播放器创建好了。')
-              player.on('ready', this.playerReady)
-              player.on('liveStreamStop', this.reload)
-              player.on('onM3u8Retry', this.reload)
           });
+          this.player.setCover(this.cover)
+          this.player.on('ready', this.playerReady)
+          this.player.on('liveStreamStop', this.reload)
+          this.player.on('onM3u8Retry', this.reload)
+          this.player.on('error', this.dealError)
+          this.player.on('waiting', this.showTip)
       },
       playerReady (e) {
-        
+        console.log('ready')
       },
       reload (e) {
-        
+        console.log('reload')
+        // window.location.reload()
+      },
+      showTip (e) {
+        console.log(e)
+        this.$toastMessage({message: '下载APP体验更流畅'})
+      },
+      dealError (err) {
+        console.log(err)
+        this.$toastMessage({message: '获取直播数据失败'})
       },
       initWebSocket () { //初始化weosocket 
-        const wsuri = 'wss://hometest.bojem.com/wss'
+        const wsuri = 'wss://home.bojem.com/wss'
+        if (this.websocket) {
+          this.setWebsocketClose = true
+          this.websocket.close() // 如果不手动关闭的话会导致重连时初始化多个websocket，同一条消息多次显示
+        }
         this.websocket = new WebSocket(wsuri); 
         this.websocket.onopen = this.websocketonopen;
         this.websocket.onerror = this.websocketonerror;
@@ -178,53 +216,34 @@
         },30000);
       },
       websocketonmessage (e){ //数据接收 
-        console.log(e)
         if (e.data) {
           const resData = JSON.parse(e.data);
-          console.log(resData);
+          console.log(resData)
           if (resData.type && resData.type == 100) {
             this.chatRecords = resData.chat_record
             this.currentGoods = resData.current_goods
             if (resData.bid_config) {
               let cover = ''
               if (resData.bid_config.auction_stat == 4 || resData.bid_config.auction_stat == 2) {
-                // this.player.setCover(resData.current_goods.pic)
                 cover = resData.current_goods.pic
               } else {
-                // this.player.setCover(resData.bid_config.prepare_pic)
                 cover = resData.bid_config.prepare_pic
               }
-              // if (resData.bid_config.auction_stat == 2) {
-              //   // this.player.setCover(resData.current_goods.pic)
-              //   // cover = resData.current_goods.pic
-              // }
+              this.cover = cover
               if (resData.bid_config.video || resData.bid_config.prepare_video) {
                 let url = ''
                 if (resData.bid_config.video) {
                   let reg = /(rtmp):\/\/S*/gi
                   if (resData.bid_config.video.match(reg)) {
-                    url = resData.bid_config.video.replace(reg, 'http://') + '.m3u8'
+                    url = resData.bid_config.video.replace(reg, 'http://') + '_ld.m3u8'
+                  } else {
+                    url = resData.bid_config.video
                   }
                 }
-                this.skinLayout = [
-                  {
-                    name: "bigPlayButton", align: "cc"
-                  }, {
-                    name: "H5Loading", align: "cc"
-                  }, {
-                    name: "controlBar", align: "blabs", x: 0, y: 0,
-                    children: [
-                      {name: "playButton", align: "tl", x: 15, y: 12},
-                      {name: "fullScreenButton", align: "tr", x: 10, y: 12},
-                      {name: "volume", align: "tr", x: 5, y: 10}
-                    ]
-                  }
-                ],
-                this.cover = cover
                 this.source = url || resData.bid_config.prepare_video  // url 'http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8'
                 this.AliplayerInit()
               } else {
-                this.skinLayout = []
+                
               }
             }
             setTimeout(() => {
@@ -239,17 +258,17 @@
                 this.chatRecords = []
                 this.priceList = []
               }
-              this.currentGoods = resData.itemInfo
             } else if (resData.type == 1 || resData.type == 2 || resData.type == 3 || resData.type == 4 || resData.type == 5 || resData.type == 6 || resData.type == 7 || resData.type == 102) {
               this.chatRecords = this.chatRecords.concat(resData)
               if (this.chatRecords.length > 100) {
                 this.chatRecords.shift()
               }
+              // 重新计算高度并滚动到最新位置
               this.$nextTick(() => {
                 setTimeout(() => {
                   this.scroll ? this.scroll.refresh() : ''
-                  this.scroll ? this.scroll.scrollTo(0, this.scroll.maxScrollY, 1000) : ''
-                }, 600);
+                  this.scroll ? this.scroll.scrollTo(0, this.scroll.maxScrollY, 400) : ''
+                }, 200);
               })
               if (resData.type == 1 || resData.type == 2) {
                 this.priceList = resData.price_list
@@ -272,15 +291,22 @@
       },
       websocketclose (e) { //关闭 
         console.log('连接断开', e)
-        setTimeout(() => {
-          this.initWebSocket()
-        }, 1000)
+        if (this.setWebsocketClose) {
+          this.setWebsocketClose = false
+        } else {
+          setTimeout(() => {
+            this.initWebSocket()
+          }, 1000)
+        }
         // console.log("connection closed (" + e.code + ")"); 
       },
     }
   }
 </script>
-<style lang="less" scoped>
+<style lang="less">
+  .prism-cover{
+    z-index: 9 !important;
+  }
   .index{
     width: 100%;
     height: calc(100vh - constant(safe-area-inset-top));
@@ -377,7 +403,7 @@
               border-radius: 10px;
               border: 1px solid #D3D3D3;
               position: relative;
-              margin-right: 1.24rem;
+              max-width: 4.8rem;
 
               .triangle{
                 position: absolute;
@@ -403,8 +429,10 @@
             .imgContent{
               display: flex;
               align-items: center;
+              max-width: 4.2rem;
             }
             .themeContent{
+              max-width: 4.2rem;
               .themeImg{
                 width: 4.2rem;
                 height: 2.24rem;
@@ -418,6 +446,10 @@
                   font-size: 0.3rem;
                   color: #000000;
                   font-weight: 500;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  flex: 1;
+                  white-space: nowrap;
                 }
                 .seeShow{
                   height: 0.42rem;
@@ -433,7 +465,6 @@
             }
           }
           .redContent{
-            margin-right: 0.36rem;
             position: relative;
             .triangle{
               position: absolute;
@@ -506,6 +537,8 @@
     }
   }
   .btn{
+    position: fixed;
+    bottom: 0;
     width: 100%;
     height: 1rem;
     background: #7B2D3E;
@@ -513,5 +546,9 @@
     color: #fff;
     text-align: center;
     line-height: 1rem;
+  }
+  .copyDiv{
+    position: relative;
+    background: transparent;
   }
 </style>
