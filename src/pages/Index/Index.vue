@@ -151,7 +151,6 @@
       },
       AliplayerInit () {
         if (this.player) {
-          console.log(this.player)
           this.player.play()
           return
         }
@@ -194,7 +193,7 @@
         this.$toastMessage({message: '获取直播数据失败'})
       },
       initWebSocket () { //初始化weosocket 
-        const wsuri = 'wss://home.bojem.com/wss'
+        const wsuri = 'wss://hometest.bojem.com/wss'
         if (this.websocket) {
           this.setWebsocketClose = true
           this.websocket.close() // 如果不手动关闭的话会导致重连时初始化多个websocket，同一条消息多次显示
@@ -218,7 +217,6 @@
       websocketonmessage (e){ //数据接收 
         if (e.data) {
           const resData = JSON.parse(e.data);
-          console.log(resData)
           if (resData.type && resData.type == 100) {
             this.chatRecords = resData.chat_record
             this.currentGoods = resData.current_goods
@@ -235,7 +233,7 @@
                 if (resData.bid_config.video) {
                   let reg = /(rtmp):\/\/S*/gi
                   if (resData.bid_config.video.match(reg)) {
-                    url = resData.bid_config.video.replace(reg, 'http://') + '_ld.m3u8'
+                    url = resData.bid_config.video.replace(reg, 'http://') + '.m3u8'
                   } else {
                     url = resData.bid_config.video
                   }
