@@ -217,9 +217,11 @@
       websocketonmessage (e){ //数据接收 
         if (e.data) {
           const resData = JSON.parse(e.data);
+          console.log(resData)
           if (resData.type && resData.type == 100) {
             this.chatRecords = resData.chat_record
             this.currentGoods = resData.current_goods
+            this.priceList = resData.price_list
             if (resData.bid_config) {
               let cover = ''
               if (resData.bid_config.auction_stat == 4 || resData.bid_config.auction_stat == 2) {
