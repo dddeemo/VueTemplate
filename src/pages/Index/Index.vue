@@ -234,10 +234,14 @@
                 let url = ''
                 if (resData.bid_config.video) {
                   let reg = /(rtmp):\/\/S*/gi
+                  let reg2 = /_2000/gi
                   if (resData.bid_config.video.match(reg)) {
                     url = resData.bid_config.video.replace(reg, 'http://') + '.m3u8'
                   } else {
                     url = resData.bid_config.video
+                  }
+                  if (resData.bid_config.video.match(reg)) {
+                    url = url.replace(reg2, '_1500')
                   }
                 }
                 this.source = url || resData.bid_config.prepare_video  // url 'http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8'
