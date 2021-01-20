@@ -37,6 +37,10 @@ global.Form = function (data, opt = {}) {
   return form
 }
 
+Vue.config.ignoredElements = [
+  'wx-open-launch-app',
+];
+
 /* eslint-disable no-new */
 global._vm = new Vue({
   el: '#app',

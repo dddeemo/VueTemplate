@@ -7,8 +7,9 @@ let router = new Router({
   routes: routes
 })
 
-// router.beforeEach((to, from, next) => {
-//   next()
-// })
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title
+  next()
+})
 
 export default router

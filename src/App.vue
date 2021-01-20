@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 export default {
   name: 'App',
   data () {
@@ -20,6 +20,14 @@ export default {
       
     }
   },
+  mounted () {
+    this.getWxConfig()
+  },
+  methods: {
+    ...mapActions({
+      getWxConfig: 'getWxConfig'
+    })
+  }
 }
 </script>
 

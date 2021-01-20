@@ -11,22 +11,25 @@
     "build:test": "cross-env NODE_ENV=production env_config=test node build/build.js"
   },
   "dependencies": {
-    "@better-scroll/core": "^2.0.0-beta.10",
+    "@better-scroll/core": "^2.1.1",
     "axios": "^0.19.2",
     "i": "^0.3.6",
     "less": "^3.11.1",
     "less-loader": "^5.0.0",
+    "moment": "^2.29.1",
+    "vant": "^2.12.4",
     "vue": "^2.5.2",
     "vue-axios": "^2.1.5",
     "vue-router": "^3.0.1",
-    "vuex": "^3.1.2"
+    "vuex": "^3.1.2",
+    "weixin-js-sdk": "^1.6.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-loader": "^7.1.1",
-    "babel-plugin-import": "^1.13.0",
+    "babel-plugin-import": "^1.13.3",
     "babel-plugin-syntax-jsx": "^6.18.0",
     "babel-plugin-transform-runtime": "^6.22.0",
     "babel-plugin-transform-vue-jsx": "^3.5.0",
