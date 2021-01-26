@@ -12,3 +12,19 @@ export const judgeEquipment = () => {
   }
   return equipmentType
 }
+
+export const isWeiXin = () => {
+  return window.navigator.userAgent.toLowerCase().match(/MicroMessenger/i) == 'micromessenger';
+}
+export const getQueryVariable = (variable) => {
+  let num = window.location.href.indexOf('?')
+  let query = window.location.href.substr(num + 1)
+  let vars = query.split("&");
+  for (let i=0; i < vars.length; i++) {
+    let pair = vars[i].split("=");
+    if(pair[0] == variable){
+      return pair[1];
+    }
+  }
+  return(false);
+}

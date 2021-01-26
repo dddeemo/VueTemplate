@@ -5,7 +5,15 @@
         <div class="btn1" v-if="isWeiXin && canUseWxOpen"><wx-open-app :text="''"></wx-open-app></div>
         <div class="btn1" v-else @click="downLoad">前往宝姐家APP查看更多珠宝</div>
       </div>
-      <div class="videoWrap">
+      <div class="videoWrap"  @click="controlVideo">
+        <div class="videoBtns" v-if="videoStatus !== 'playing'">
+          <!-- <div class="videoBtn pause" v-if="videoStatus == 'pause'">
+            <svg t="1611307914431" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2603" width="128" height="128"><path d="M735.9 128.9c-51.2 0-96 44.7-96 95.8v702.6c0 51.1 44.8 95.8 96 95.8s96-44.7 96-95.8V224.7c0-51.1-44.8-95.8-96-95.8z m-447.8 0c-51.2 0-96 44.7-96 95.8v702.6c0 51.1 44.8 95.8 96 95.8s96-44.7 96-95.8V224.7c-0.1-51.1-44.9-95.8-96-95.8z" p-id="2604"></path></svg>
+          </div> -->
+          <div class="videoBtn play" v-if="videoStatus == 'pause' || videoStatus == 'ready' || videoStatus == 'init' || videoStatus == 'ended'">
+            <svg t="1611307960636" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3357" width="128" height="128"><path d="M291.986286 51.931429l582.948571 333.092571a146.285714 146.285714 0 0 1 0 253.952L291.986286 972.068571A146.285714 146.285714 0 0 1 73.142857 845.092571V178.907429A146.285714 146.285714 0 0 1 291.986286 51.931429z" p-id="3358"></path></svg>
+          </div>
+        </div>
         <div class="auctionInfo countDownWrap" v-if="auction_stat == 1">
           <p>离拍卖开始仅剩</p>
           <div class="countDown">
@@ -101,10 +109,10 @@
 <script>
   import BScroll from '@better-scroll/core'
   import wx from 'weixin-js-sdk'
-  import { CountDown } from 'vant';
+  import { CountDown, Toast } from 'vant';
   import { mapState } from 'vuex'
   import wxOpenApp from '@/components/WxOpenLaunchApp/index'
-  import {judgeEquipment} from '@/utils/utils'
+  import {judgeEquipment, isWeiXin} from '@/utils/utils'
 
   export default {
     name: 'index',
@@ -117,25 +125,19 @@
         chatRecords: [],
         source: '', // http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8   http://pull.bojem.com/Zhibo/Zhibo3.m3u8
         cover: '', // 封面图
-        skinLayout: [
-          {
-            name: "bigPlayButton", align: "cc"
-          }, {
-            name: "H5Loading", align: "cc"
-          }, {
-            name: "controlBar", align: "blabs", x: 0, y: 0,
-            children: [
-              {name: "playButton", align: "tl", x: 15, y: 12},
-              {
-                "name": "liveDisplay",
-                "align": "tlabs",
-                "x": 40,
-                "y": 6
-              },
-              {name: "fullScreenButton", align: "tr", x: 10, y: 12}
-            ]
-          }
-        ],
+        // skinLayout: [
+        //   {
+        //     name: "bigPlayButton", align: "cc"
+        //   }, {
+        //     name: "H5Loading", align: "cc"
+        //   }, {
+        //     name: "controlBar", align: "blabs", x: 0, y: 0,
+        //     children: [
+        //       {name: "playButton", align: "tl", x: 15, y: 12}
+        //     ]
+        //   }
+        // ],
+        skinLayout: false,
         currentGoods: {},
         priceList: [],
         player: null,
@@ -151,7 +153,12 @@
       },
       ...mapState({
         canUseWxOpen: state => state.canUseWxOpen,
-      })
+      }),
+      videoStatus () {
+        if (this.player) {
+          return this.player.getStatus()
+        }
+      }
     },
     watch: {
       '$store.state.wxState' (val) {
@@ -228,13 +235,36 @@
         console.log('reload')
         // window.location.reload()
       },
+      controlVideo () {
+        console.log(this.player.getStatus())
+        if (this.player) {
+          switch (this.videoStatus) {
+            case 'init':
+              this.player.play()
+              break
+            case 'ready':
+              this.player.play()
+              break
+            case 'playing':
+              this.player.pause()
+              break
+            case 'pause':
+              this.player.play()
+              break
+            case 'ended':
+              this.player.play()
+              break
+          }
+        }
+      },
       showTip (e) {
         console.log(e)
-        this.$toastMessage({message: '下载APP体验更流畅'})
+        Toast('下载APP体验更流畅')
       },
       dealError (err) {
         console.log(err)
-        this.$toastMessage({message: '获取直播数据失败'})
+        this.player.setCover(this.cover)
+        Toast('获取直播数据失败')
       },
       initWebSocket () { //初始化weosocket 
         const wsuri = 'wss://hometest.bojem.com/wss'
@@ -295,7 +325,7 @@
                     url = url.replace(reg2, '_1500')
                   }
                 }
-                this.source = url || resData.bid_config.prepare_video  // url 'http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8'
+                this.source = resData.bid_config.next_begin_time > 0 ? resData.bid_config.prepare_video : url   // url 'http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8'
                 this.AliplayerInit()
               } else {
                 
@@ -329,15 +359,7 @@
                 this.priceList = resData.price_list
               }
             } else if (resData.type == 13) {
-              this.chatRecords = resData.chat_record
-              this.priceList = resData.price_list
-              // 重新计算高度并滚动到最新位置
-              this.$nextTick(() => {
-                setTimeout(() => {
-                  this.scroll ? this.scroll.refresh() : ''
-                  this.scroll ? this.scroll.scrollTo(0, this.scroll.maxScrollY, 400) : ''
-                }, 200);
-              })
+              window.location.reload()
             } else if (resData.type == 10) {
               window.location.reload()
             }
@@ -409,9 +431,6 @@
   }
 </script>
 <style lang="less" scoped>
-  .prism-cover{
-    z-index: 9 !important;
-  }
   .index{
     width: 100%;
     height: calc(100vh - constant(safe-area-inset-top));
@@ -466,15 +485,43 @@
       width: 100%;
       height: 4.22rem;
       position: relative;
-      /deep/ .prism-player .prism-controlbar{
+
+      .videoBtns{
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
         z-index: 12;
+        svg{
+          width: 60%;
+          height: 60%;
+          fill: #fff;
+        }
+
+        .videoBtn{
+          position: absolute;
+          left: 50%;
+          top: 40%;
+          transform: translate(-50%, -50%);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 1rem;
+          height: 1rem;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 0.5rem;
+        }
+        .play svg{
+          margin-left: 10%;
+        }
       }
       .auctionInfo{
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 10;
+        z-index: 20;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -496,8 +543,6 @@
       .countDownWrap{
         font-size: 0.26rem;
         justify-content: center;
-        background:#61615f;
-        z-index: 12;
         p{
           color: #fff;
           font-size: 0.26rem;
@@ -711,7 +756,7 @@
           }
         }
         .item:last-child{
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
         }
       }
     }
@@ -721,7 +766,7 @@
       width: 100%;
       height: 1rem;
       background: #7B2D3E;
-      font-size: 20px;
+      font-size: 18px;
       color: #fff;
       text-align: center;
       line-height: 1rem;

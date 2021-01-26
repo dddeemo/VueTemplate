@@ -8,9 +8,10 @@
         @ready="openLabelReady"
         @error="handleErrorFn"
         @launch="handleLaunchFn"
+        :extinfo="extinfo"
         >
         <script type="text/wxtag-template">
-          <style>.btn {font-size: 30px; text-align: center; width: 10000px; height: 100px; color: transparent}
+          <style>.btn {font-size: 30px; text-align: center; width: 10000px; height: 1000px; color: transparent}
           </style>
             <div class="btn"></div>
         </script>
@@ -19,6 +20,7 @@
   </div>
 </template>
 <script>
+import {judgeEquipment} from '@/utils/utils'
 export default {
   name: 'wxOpenApp',
   data () {
@@ -30,6 +32,10 @@ export default {
     text: {
       type: String,
       default: '打开宝姐家App'
+    },
+    extinfo: {
+      type: String,
+      default: ''
     }
   },
   methods: {
@@ -40,7 +46,7 @@ export default {
     handleErrorFn (e) {
       // 跳转失败
       console.log(JSON.stringify(e), '跳转失败')
-      if (this.judgeEquipment() == 'ios') {
+      if (judgeEquipment() == 'ios') {
         window.location.href = 'https://apps.apple.com/cn/app/id1073905498'
       } else {
         window.location.href = 'https://www.bojem.com/app'
@@ -63,10 +69,11 @@ export default {
     bottom: 0;
  }
  .wxOpen{
-   position: absolute;
+    position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
+    z-index: 10;
  }
 </style>

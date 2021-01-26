@@ -1,14 +1,15 @@
 <template>
   <div class="home">
-    <div class="liveWrap">
+    <div class="liveWrap" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
+      <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
       <img :src="liveInfo.rectangle_cover_img" alt="">
       <div class="liveTips">
         <p>前往宝姐家APP，畅享超清直播体验</p>
-        <p class="btn" v-if="isWeiXin && canUseWxOpen">前往宝姐家<wx-open-app :text="''"></wx-open-app></p>
-        <p class="btn" v-else @click="downLoad">前往宝姐家</p>
+        <p class="btn">前往宝姐家</p>
       </div>
     </div>
-    <div class="logoWrap">
+    <div class="logoWrap" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
+      <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
       <div class="bojem">
         <div class="logo">
           <img src="../../assets/images/bojem_logo.png" alt="">
@@ -18,19 +19,21 @@
           <p>高端珠宝知识分享平台</p>
         </div>
       </div>
-      <div class="enter" v-if="isWeiXin && canUseWxOpen">进入<wx-open-app :text="''"></wx-open-app></div>
-      <div class="enter" v-else @click="downLoad">进入</div>
+      <div class="enter">进入</div>
     </div>
-    <div v-if="liveInfo.status == 1" class="countDownWrap">
-      <count-down :time="liveInfo.timeDiff * 1000" format="距本场直播开始还剩：DD 天 HH 时 mm 分 ss 秒" />
+    <div style="position: relative" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
+      <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
+      <div v-if="liveInfo.status == 1" class="countDownWrap">
+        <count-down :time="liveInfo.timeDiff * 1000" @finish="countDownFinished" format="距本场直播开始还剩：DD 天 HH 时 mm 分 ss 秒" />
+      </div>
+      <div v-else-if="liveInfo.status == 2" class="countDownWrap">
+        <p style="color: #7B2C3F">{{liveInfo.dec}}</p>
+      </div>
+      <div v-else-if="liveInfo.status == 3" class="countDownWrap">
+        <p style="color: #999">{{liveInfo.dec}}</p>
+      </div>
     </div>
-    <div v-else-if="liveInfo.status == 2" class="countDownWrap">
-      <p style="color: #7B2C3F">{{liveInfo.dec}}</p>
-    </div>
-    <div v-else-if="liveInfo.status == 3" class="countDownWrap">
-      <p style="color: #999">{{liveInfo.dec}}</p>
-    </div>
-    <div class="moreLives">
+    <div class="moreLives" v-if="liveList.length">
       <p>更多精彩直播</p>
       <div class="liveList">
         <div class="live" v-for="(n, i) in liveList" :key="i">
@@ -48,15 +51,15 @@
             </div>
             <div class="booking">
               <p>{{n.num}}人已预约</p>
-              <p class="bookingBtn" v-if="isWeiXin && canUseWxOpen">立即预约<wx-open-app :text="''"></wx-open-app></p>
+              <p class="bookingBtn" v-if="isWeiXin && canUseWxOpen">立即预约<wx-open-app :text="''" :extinfo="extinfo"></wx-open-app></p>
               <p class="bookingBtn" v-else @click="downLoad">立即预约</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="bottomBar">
-      <wx-open-app :text="''"></wx-open-app>
+    <div class="bottomBar" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
+      <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
       <div class="shoppingBag">
         <p>{{goodsNum || 0}}</p>
       </div>
@@ -76,7 +79,7 @@ import {getLiveInfo} from '@/api/request'
 import moment from 'moment'
 import { mapState } from 'vuex'
 import wxOpenApp from '@/components/WxOpenLaunchApp/index'
-import {judgeEquipment} from '@/utils/utils'
+import {judgeEquipment, getQueryVariable} from '@/utils/utils'
 export default {
   name: 'Home',
   data () {
@@ -84,7 +87,9 @@ export default {
       goodsNum: 0,
       clickNum: 0,
       liveInfo: {},
-      liveList: []
+      liveList: [],
+      liveId: '',
+      extinfo: ''
     }
   },
   components: {
@@ -112,10 +117,28 @@ export default {
       }
     }
   },
-  mounted () {
-    this.getLiveInfo()
+  async mounted () {
+    this.liveId = await this.getLiveId().catch(e => {
+      console.log(e)
+    })
+    if (this.liveId) {
+      this.getLiveInfo()
+    }
   },
   methods: {
+    countDownFinished () {
+      this.getLiveInfo()
+    },
+    getLiveId () {
+      return new Promise((resolve, reject) => {
+        let liveId = getQueryVariable('liveId')
+        if (liveId) {
+          resolve(liveId)
+        } else {
+          reject('no liveId')
+        }
+      })
+    },
     downLoad () {
       if (judgeEquipment() == 'ios') {
         window.location.href = 'https://apps.apple.com/cn/app/id1073905498'
@@ -125,7 +148,7 @@ export default {
     },
     getLiveInfo () {
       getLiveInfo({
-        liveId: 477
+        liveId: this.liveId
       }).then(res => {
         console.log(res)
         let data = res.data
@@ -134,6 +157,11 @@ export default {
         this.liveList = data.liveList
         this.liveInfo = data.liveInfo
         document.title = data.liveInfo.name
+        this.extinfo = JSON.stringify({
+          type: this.liveInfo.status == 2 ? 2 : 1,
+          session: this.liveInfo.id,
+          streamUrl: this.liveInfo.stream_url
+        })
       }).catch(e => {
         console.log(e)
       })
@@ -215,6 +243,7 @@ export default {
       }
     }
     .logoWrap{
+      position: relative;
       height: 1.38rem;
       padding: 0 0.3rem;
       display: flex;
@@ -277,7 +306,7 @@ export default {
     }
     .moreLives{
       padding: 0.1rem 0.3rem;
-      margin-bottom: 1.3rem;
+      margin-bottom: 1.6rem;
       >p {
         font-size: 0.3rem;
         color: #000000;
