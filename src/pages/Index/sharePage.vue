@@ -4,8 +4,10 @@
       <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
       <img :src="liveInfo.rectangle_cover_img" alt="">
       <div class="liveTips">
-        <p>前往宝姐家APP，畅享超清直播体验</p>
-        <p class="btn">前往宝姐家</p>
+        <div>
+          <p>前往宝姐家APP，畅享超清直播体验</p>
+          <p class="btn">前往宝姐家</p>
+        </div>
       </div>
     </div>
     <div class="logoWrap" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
@@ -19,12 +21,12 @@
           <p>高端珠宝知识分享平台</p>
         </div>
       </div>
-      <div class="enter">进入</div>
+      <div class="enter"><p>进入</p></div>
     </div>
     <div style="position: relative" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
       <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
       <div v-if="liveInfo.status == 1" class="countDownWrap">
-        <count-down :time="liveInfo.timeDiff * 1000" @finish="countDownFinished" format="距本场直播开始还剩：DD 天 HH 时 mm 分 ss 秒" />
+        <count-down :time="liveInfo.timeDiff * 1000" @finish="countDownFinished" format="距本场直播开始还剩：DD天HH时mm分ss秒" />
       </div>
       <div v-else-if="liveInfo.status == 2" class="countDownWrap">
         <p style="color: #7B2C3F">{{liveInfo.dec}}</p>
@@ -35,8 +37,9 @@
     </div>
     <div class="moreLives" v-if="liveList.length">
       <p>更多精彩直播</p>
-      <div class="liveList">
+      <div class="liveList" @click="isWeiXin && canUseWxOpen ? '' : downLoad()">
         <div class="live" v-for="(n, i) in liveList" :key="i">
+          <wx-open-app v-if="isWeiXin && canUseWxOpen" :text="''" :extinfo="extinfo"></wx-open-app>
           <div class="liveImgWrap">
             <div class="bookingIcon">
               <div class="clock"></div>
@@ -51,8 +54,7 @@
             </div>
             <div class="booking">
               <p>{{n.num}}人已预约</p>
-              <p class="bookingBtn" v-if="isWeiXin && canUseWxOpen">立即预约<wx-open-app :text="''" :extinfo="extinfo"></wx-open-app></p>
-              <p class="bookingBtn" v-else @click="downLoad">立即预约</p>
+              <div class="bookingBtn"><p>立即预约</p></div>
             </div>
           </div>
         </div>
@@ -89,6 +91,7 @@ export default {
       liveInfo: {},
       liveList: [],
       liveId: '',
+      userId: '',
       extinfo: ''
     }
   },
@@ -103,13 +106,6 @@ export default {
       canUseWxOpen: state => state.canUseWxOpen,
     })
   },
-  watch: {
-    '$store.state.wxState' (val) {
-      if (val) {
-        this.wxInit()
-      }
-    }
-  },
   filters: {
     filterTime (val) {
       if (val) {
@@ -119,6 +115,9 @@ export default {
   },
   async mounted () {
     this.liveId = await this.getLiveId().catch(e => {
+      console.log(e)
+    })
+    this.userId = await this.getUserId().catch(e => {
       console.log(e)
     })
     if (this.liveId) {
@@ -136,6 +135,16 @@ export default {
           resolve(liveId)
         } else {
           reject('no liveId')
+        }
+      })
+    },
+    getUserId () {
+      return new Promise((resolve, reject) => {
+        let userId = getQueryVariable('userId')
+        if (userId) {
+          resolve(userId)
+        } else {
+          reject('no userId')
         }
       })
     },
@@ -160,8 +169,12 @@ export default {
         this.extinfo = JSON.stringify({
           type: this.liveInfo.status == 2 ? 2 : 1,
           session: this.liveInfo.id,
-          streamUrl: this.liveInfo.stream_url
+          streamUrl: this.liveInfo.stream_url,
+          fromUserId: this.userId
         })
+        if (wx) {
+          this.wxInit()
+        }
       }).catch(e => {
         console.log(e)
       })
@@ -204,15 +217,16 @@ export default {
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    overflow: auto;
 
     .liveWrap{
       position: relative;
       width: 100%;
-      height: 4rem;
+      height: auto;
       >img{
+        display: block;
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: auto;
       }
       .liveTips{
         position: absolute;
@@ -222,7 +236,9 @@ export default {
         bottom: 0;
         z-index: 1;
         background: rgba(0,0,0,0.7);
-
+        display: flex;
+        justify-content: center;
+        align-items: center;
         p{
           font-size: 0.3rem;
           color: #fff;
@@ -230,7 +246,7 @@ export default {
           line-height: 1;
         }
         p:first-child{
-          margin: 1.25rem auto 0.36rem;
+          margin: 0 auto 0.36rem;
         }
         .btn{
           position: relative;
@@ -280,15 +296,20 @@ export default {
       .enter{
         position: relative;
         flex-shrink: 0;
+        display: table;
         width: 1.56rem;
         height: 0.6rem;
         border: 0.02rem solid #7B2C3F;
         color: #7B2C3F;
         font-size: 0.3rem;
         text-align: center;
-        line-height: 0.6rem;
         border-radius: 0.3rem;
         overflow: hidden;
+
+        >p{
+          display: table-cell;
+        vertical-align: middle;
+        }
       }
     }
     .countDownWrap{
@@ -306,7 +327,7 @@ export default {
     }
     .moreLives{
       padding: 0.1rem 0.3rem;
-      margin-bottom: 1.6rem;
+      margin-bottom: 2rem;
       >p {
         font-size: 0.3rem;
         color: #000000;
@@ -374,9 +395,11 @@ export default {
               }
             }
             .booking{
+              position: relative;
               display: flex;
               justify-content: space-between;
               align-items: flex-end;
+              overflow: hidden;
 
               >p:first-child{
                 font-size: 0.22rem;
@@ -385,14 +408,19 @@ export default {
               }
               .bookingBtn{
                 position: relative;
+                display: table;
                 color: #459CEE;
                 font-size: 0.26rem;
                 width: 1.56rem;
                 height: 0.54rem;
                 border-radius: 0.27rem;
                 text-align: center;
-                line-height: 0.54rem;
                 border: 0.02rem solid #459CEE;
+
+                >p{
+                  display: table-cell;
+                  vertical-align: middle;
+                }
               }
             }
           }
@@ -418,6 +446,7 @@ export default {
       align-items: center;
       padding: 0 0.14rem 0 0.2rem;
       background: #fff;
+      overflow: hidden;
 
       .shoppingBag{
         flex-shrink: 0;

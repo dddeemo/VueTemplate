@@ -33,7 +33,6 @@ export default {
 
 <style lang="less" scoped>
 #app {
-  
   .router-fade-enter-active {
     transition: opacity 0.4s;
   }

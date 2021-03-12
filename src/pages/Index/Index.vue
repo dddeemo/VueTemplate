@@ -267,7 +267,8 @@
         Toast('获取直播数据失败')
       },
       initWebSocket () { //初始化weosocket 
-        const wsuri = 'wss://hometest.bojem.com/wss'
+        console.log(process.env)
+        const wsuri = process.env.WSS_URL
         if (this.websocket) {
           this.setWebsocketClose = true
           this.websocket.close() // 如果不主动关闭的话会导致重连时初始化多个websocket，同一条消息多次显示
@@ -400,7 +401,7 @@
           wx.updateAppMessageShareData({ 
             title: '我正在看宝姐家拍卖', // 分享标题
             desc: '宝姐家为每一位女性提供优质、优雅的珠宝，让每一位女性都能遇见更好的自己', // 分享描述
-            link: 'https://html.bojem.com/auction_1/', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            link: window.location.href, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
             imgUrl: 'https://osssaloon.bojem.com/uplaod/image/20210118/20210118174532399.png', // 分享图标
             success: () => {
               // 设置成功
@@ -408,7 +409,7 @@
           })
           wx.updateTimelineShareData({ 
             title: '我正在看宝姐家拍卖', // 分享标题
-            link: 'https://html.bojem.com/auction_1/', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            link: window.location.href, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
             imgUrl: 'https://osssaloon.bojem.com/uplaod/image/20210118/20210118174532399.png', // 分享图标
             success: function () {
               // 设置成功
