@@ -170,7 +170,8 @@ export default {
           type: this.liveInfo.status == 2 ? 2 : 1,
           session: this.liveInfo.id,
           streamUrl: this.liveInfo.stream_url,
-          fromUserId: this.userId
+          fromUserId: this.userId,
+          from_id: 1
         })
         if (wx) {
           this.wxInit()

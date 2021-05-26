@@ -2,7 +2,7 @@
     <div class="index">
       <div class="end" v-if="auction_stat == 3">
         <img :src="auction_end_pic" alt="">
-        <div class="btn1" v-if="isWeiXin && canUseWxOpen"><wx-open-app :text="''"></wx-open-app></div>
+        <div class="btn1" v-if="isWeiXin && canUseWxOpen"><wx-open-app  :extinfo="extinfo" :text="'前往宝姐家APP查看更多珠宝'"></wx-open-app></div>
         <div class="btn1" v-else @click="downLoad">前往宝姐家APP查看更多珠宝</div>
       </div>
       <div class="videoWrap"  @click="controlVideo">
@@ -99,7 +99,7 @@
         
       </div>
       <div v-if="isWeiXin && canUseWxOpen" class="btn">
-        <wx-open-app :text="'前往宝姐家APP参与拍卖'"></wx-open-app>
+        <wx-open-app :extinfo="extinfo" :text="'前往宝姐家APP参与拍卖'"></wx-open-app>
       </div>
       <div v-else class="btn" @click="downLoad">
         前往宝姐家APP参与拍卖
@@ -144,7 +144,10 @@
         auction_stat: -1,
         auction_plan_title: '',
         auction_end_pic: '',
-        next_begin_time: 0
+        next_begin_time: 0,
+        extinfo: {
+          from_id: 2
+        }
       }
     },
     computed: {
