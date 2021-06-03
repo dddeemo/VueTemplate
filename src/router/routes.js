@@ -5,7 +5,7 @@ export default [
     component: resolve => {
       require.ensure([], () => resolve(require('@/pages/Index/index')))
     },
-    meta: {title: '宝姐家拍卖', keepAlive: false}
+    meta: {title: '宝姐珠宝拍卖', keepAlive: false}
   },
   {
     path: '/share',
@@ -13,6 +13,6 @@ export default [
     component: resolve => {
       require.ensure([], () => resolve(require('@/pages/Index/sharePage')))
     },
-    meta: {title: '宝姐家直播', keepAlive: false}
+    meta: {title: '宝姐珠宝直播', keepAlive: false}
   }
 ]

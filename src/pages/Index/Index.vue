@@ -402,7 +402,7 @@
         // });
         wx.ready(() => {
           wx.updateAppMessageShareData({ 
-            title: '我正在看宝姐家拍卖', // 分享标题
+            title: '我正在看宝姐珠宝拍卖', // 分享标题
             desc: '宝姐家为每一位女性提供优质、优雅的珠宝，让每一位女性都能遇见更好的自己', // 分享描述
             link: window.location.href, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
             imgUrl: 'https://osssaloon.bojem.com/uplaod/image/20210118/20210118174532399.png', // 分享图标
@@ -411,7 +411,7 @@
             }
           })
           wx.updateTimelineShareData({ 
-            title: '我正在看宝姐家拍卖', // 分享标题
+            title: '我正在看宝姐珠宝拍卖', // 分享标题
             link: window.location.href, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
             imgUrl: 'https://osssaloon.bojem.com/uplaod/image/20210118/20210118174532399.png', // 分享图标
             success: function () {
