@@ -325,7 +325,7 @@
                   } else {
                     url = resData.bid_config.video
                   }
-                  if (resData.bid_config.video.match(reg)) {
+                  if (resData.bid_config.video.match(reg2)) {
                     url = url.replace(reg2, '_1500')
                   }
                 }
